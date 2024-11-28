@@ -2,59 +2,61 @@ namespace DesafioProjetoHospedagem.Models
 {
     public class Reserva
     {
-        public List<Pessoa> Hospedes { get; set; }
-        public Suite Suite { get; set; }
-        public int DiasReservados { get; set; }
-
-        public Reserva() { }
-
         public Reserva(int diasReservados)
         {
-            DiasReservados = diasReservados;
+            DiasReservados = diasReservados > 0
+                ? diasReservados
+                : throw new ArgumentException("O número de dias reservados deve ser maior que zero.");
         }
 
-        public void CadastrarHospedes(List<Pessoa> hospedes)
+        private List<Pessoa> _hospedes = new();
+        public IReadOnlyCollection<Pessoa> Hospedes => _hospedes.AsReadOnly();
+
+        public Suite Suite { get; private set; }
+        public int DiasReservados { get; private set; }
+
+        public void CadastrarHospedes(IEnumerable<Pessoa> hospedes)
         {
-            // TODO: Verificar se a capacidade é maior ou igual ao número de hóspedes sendo recebido
-            // *IMPLEMENTE AQUI*
-            if (true)
+            if (Suite == null)
             {
-                Hospedes = hospedes;
+                throw new InvalidOperationException("Nenhuma suíte foi cadastrada.");
             }
-            else
+
+            var listaHospedes = hospedes.ToList();
+
+            if (listaHospedes.Count > Suite.Capacidade)
             {
-                // TODO: Retornar uma exception caso a capacidade seja menor que o número de hóspedes recebido
-                // *IMPLEMENTE AQUI*
+                throw new InvalidOperationException("A quantidade de hóspedes excede a capacidade da suíte.");
             }
+
+            _hospedes = listaHospedes;
         }
 
         public void CadastrarSuite(Suite suite)
         {
-            Suite = suite;
+            Suite = suite ?? throw new ArgumentNullException(nameof(suite), "A suíte não pode ser nula.");
         }
 
         public int ObterQuantidadeHospedes()
         {
-            // TODO: Retorna a quantidade de hóspedes (propriedade Hospedes)
-            // *IMPLEMENTE AQUI*
-            return 0;
+            return _hospedes.Count;
         }
 
         public decimal CalcularValorDiaria()
         {
-            // TODO: Retorna o valor da diária
-            // Cálculo: DiasReservados X Suite.ValorDiaria
-            // *IMPLEMENTE AQUI*
-            decimal valor = 0;
-
-            // Regra: Caso os dias reservados forem maior ou igual a 10, conceder um desconto de 10%
-            // *IMPLEMENTE AQUI*
-            if (true)
+            if (Suite == null)
             {
-                valor = 0;
+                throw new InvalidOperationException("Nenhuma suíte foi cadastrada.");
             }
 
-            return valor;
+            decimal valorTotal = DiasReservados * Suite.ValorDiaria;
+
+            if (DiasReservados >= 10)
+            {
+                valorTotal *= 0.90m; // Aplica desconto de 10%
+            }
+
+            return valorTotal;
         }
     }
 }
